@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.akylyar.springcourse.FirstRestApp.dto.MeasurementDTO;
+import ru.akylyar.springcourse.FirstRestApp.dto.MeasurementsResponse;
 import ru.akylyar.springcourse.FirstRestApp.models.Measurement;
 import ru.akylyar.springcourse.FirstRestApp.services.MeasurementService;
 import ru.akylyar.springcourse.FirstRestApp.util.ErrorsUtil;
@@ -16,7 +17,7 @@ import ru.akylyar.springcourse.FirstRestApp.util.MeasurementException;
 import ru.akylyar.springcourse.FirstRestApp.validators.SensorNameValidator;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/measurements")
@@ -33,8 +34,9 @@ public class MeasurementController {
     }
 
     @GetMapping
-    public List<Measurement> getMeasurements() {
-        return measurementService.findAll();
+    public MeasurementsResponse getMeasurements() {
+        return new MeasurementsResponse(measurementService.findAll().stream().map(this::convertToMeasurementDTO)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/rainyDaysCount")
@@ -67,5 +69,9 @@ public class MeasurementController {
 
     private Measurement convertToMeasurement(MeasurementDTO measurementDTO) {
         return modelMapper.map(measurementDTO, Measurement.class);
+    }
+
+    private MeasurementDTO convertToMeasurementDTO(Measurement measurement) {
+        return modelMapper.map(measurement, MeasurementDTO.class);
     }
 }
