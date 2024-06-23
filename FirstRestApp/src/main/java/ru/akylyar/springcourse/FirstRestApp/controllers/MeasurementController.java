@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import ru.akylyar.springcourse.FirstRestApp.dto.MeasurementDTO;
 import ru.akylyar.springcourse.FirstRestApp.models.Measurement;
 import ru.akylyar.springcourse.FirstRestApp.services.MeasurementService;
+import ru.akylyar.springcourse.FirstRestApp.util.ErrorsUtil;
 import ru.akylyar.springcourse.FirstRestApp.util.MeasurementErrorResponse;
-import ru.akylyar.springcourse.FirstRestApp.util.MeasurementNoSaveException;
+import ru.akylyar.springcourse.FirstRestApp.util.MeasurementException;
 import ru.akylyar.springcourse.FirstRestApp.validators.SensorNameValidator;
 
 import java.time.LocalDateTime;
@@ -48,16 +48,7 @@ public class MeasurementController {
         sensorNameValidator.validate(convertToMeasurement(measurementDTO).getSensor(), bindingResult);
 
         if (bindingResult.hasErrors()) {
-            StringBuilder errorMsg = new StringBuilder();
-
-            List<FieldError> errors = bindingResult.getFieldErrors();
-
-            for (FieldError error : errors) {
-                errorMsg.append(error.getField()).append(" - ")
-                        .append(error.getDefaultMessage()).append(":");
-            }
-
-            throw new MeasurementNoSaveException(errorMsg.toString());
+            ErrorsUtil.buildErrorMessage(bindingResult);
         }
 
         measurementService.save(convertToMeasurement(measurementDTO));
@@ -66,7 +57,7 @@ public class MeasurementController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<MeasurementErrorResponse> handleException(MeasurementNoSaveException e) {
+    private ResponseEntity<MeasurementErrorResponse> handleException(MeasurementException e) {
         MeasurementErrorResponse response = new MeasurementErrorResponse();
         response.setMessage(e.getMessage());
         response.setTimestamp(LocalDateTime.now());
