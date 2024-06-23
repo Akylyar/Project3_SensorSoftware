@@ -31,18 +31,6 @@ public class MeasurementService {
         measurementsRepository.save(measurement);
     }
 
-    public Integer getRainyDaysCount() {
-        List<Measurement> measurements = measurementsRepository.findAll();
-        int count = 0;
-
-        for (Measurement measurement : measurements) {
-            if (measurement.isRaining())
-                count++;
-        }
-
-        return count;
-    }
-
     public void enrichMeasurement(Measurement measurement) {
         measurement.setSensor(sensorService.findByName(measurement.getSensor().getName()).get());
         measurement.setMeasuredAt(LocalDateTime.now());
